@@ -189,6 +189,18 @@ define([
                     filter_end: filterEnd || ''
                 }
             });
+        } else if (action === 'manualmatch') {
+            // Manual match a transaction
+            handleManualMatch(context);
+            return;
+        } else if (action === 'createdeposit') {
+            // Create supplementary deposit
+            handleCreateSupplementaryDeposit(context);
+            return;
+        } else if (action === 'searchtxn') {
+            // Search for NS transactions (AJAX-style, returns JSON)
+            handleSearchTransactions(context);
+            return;
         } else {
             // Default - apply filter
             const filterStart = request.parameters.custpage_filter_start;
@@ -708,6 +720,8 @@ define([
         const request = context.request;
         const response = context.response;
         const settlementId = request.parameters.settlementId;
+        const messageParam = request.parameters.message;
+        const errorParam = request.parameters.error;
 
         // Get settlement info
         const settlement = reconciliation.getSettlementById(settlementId);
@@ -718,6 +732,7 @@ define([
 
         // Add styling
         addStyling(form);
+        addDetailsPageStyling(form);
 
         // Add back button
         form.addButton({
@@ -725,6 +740,20 @@ define([
             label: 'Back to Dashboard',
             functionName: 'goBack'
         });
+
+        // Show message/error if present
+        if (messageParam || errorParam) {
+            const msgField = form.addField({
+                id: 'custpage_detail_message',
+                type: serverWidget.FieldType.INLINEHTML,
+                label: 'Message'
+            });
+            if (messageParam) {
+                msgField.defaultValue = '<div class="windcave-message windcave-success">' + messageParam + '</div>';
+            } else if (errorParam) {
+                msgField.defaultValue = '<div class="windcave-message windcave-error">Error: ' + errorParam + '</div>';
+            }
+        }
 
         if (!settlement) {
             const errorField = form.addField({
@@ -750,16 +779,8 @@ define([
         headerHtml += '<tr><td><strong>Matched Amount:</strong></td><td>$' + parseFloat(settlement.matchedAmount || 0).toFixed(2) + '</td></tr>';
         headerHtml += '<tr><td><strong>Transactions:</strong></td><td>' + (settlement.matchedCount || 0) + ' matched, ' + (settlement.unmatchedCount || 0) + ' unmatched</td></tr>';
 
-        if (settlement.bankDepositId) {
-            const depositUrl = url.resolveRecord({
-                recordType: 'deposit',
-                recordId: settlement.bankDepositId
-            });
-            headerHtml += '<tr><td><strong>Bank Deposit:</strong></td><td><a href="' + depositUrl + '" target="_blank">View Deposit</a></td></tr>';
-        }
-
         if (settlement.errorMessage) {
-            headerHtml += '<tr><td><strong>Errors:</strong></td><td style="color: #dc3545;">' + settlement.errorMessage + '</td></tr>';
+            headerHtml += '<tr><td><strong>Notes:</strong></td><td style="color: #856404;">' + settlement.errorMessage + '</td></tr>';
         }
 
         headerHtml += '</table></div>';
@@ -771,8 +792,86 @@ define([
         });
         headerField.defaultValue = headerHtml;
 
+        // Deposits section
+        const deposits = reconciliation.getDepositsForSettlement(settlementId);
+        const pendingDepositTxns = reconciliation.getMatchedNotDepositedTransactions(settlementId);
+
+        let depositsHtml = '<div class="windcave-info-panel">';
+        depositsHtml += '<h3 style="margin-top: 0;">Bank Deposits</h3>';
+
+        if (deposits.length === 0 && pendingDepositTxns.length === 0) {
+            depositsHtml += '<p style="color: #666;">No deposits created yet.</p>';
+        } else {
+            if (deposits.length > 0) {
+                depositsHtml += '<table class="windcave-txn-table" style="margin-bottom: 15px;">';
+                depositsHtml += '<thead><tr>';
+                depositsHtml += '<th>Deposit</th>';
+                depositsHtml += '<th>Amount</th>';
+                depositsHtml += '<th>Transactions</th>';
+                depositsHtml += '<th>Action</th>';
+                depositsHtml += '</tr></thead><tbody>';
+
+                for (const dep of deposits) {
+                    const depositUrl = url.resolveRecord({
+                        recordType: 'deposit',
+                        recordId: dep.depositId
+                    });
+                    depositsHtml += '<tr>';
+                    depositsHtml += '<td>' + dep.depositText + '</td>';
+                    depositsHtml += '<td>$' + dep.amount.toFixed(2) + '</td>';
+                    depositsHtml += '<td>' + dep.transactionCount + ' transaction(s)</td>';
+                    depositsHtml += '<td><a href="' + depositUrl + '" target="_blank">View in NetSuite</a></td>';
+                    depositsHtml += '</tr>';
+                }
+
+                depositsHtml += '</tbody></table>';
+            }
+
+            // Show pending deposit button if there are matched but not deposited transactions
+            if (pendingDepositTxns.length > 0) {
+                const createDepositUrl = url.resolveScript({
+                    scriptId: runtime.getCurrentScript().id,
+                    deploymentId: runtime.getCurrentScript().deploymentId,
+                    params: {
+                        custpage_action: 'createdeposit',
+                        settlementId: settlementId
+                    }
+                });
+
+                let pendingAmount = 0;
+                for (const t of pendingDepositTxns) {
+                    pendingAmount += t.amount;
+                }
+
+                depositsHtml += '<div style="background-color: #fff3cd; border: 1px solid #ffc107; padding: 12px; border-radius: 4px;">';
+                depositsHtml += '<strong>' + pendingDepositTxns.length + ' matched transaction(s)</strong> totaling <strong>$' + pendingAmount.toFixed(2) + '</strong> are ready for deposit.';
+                depositsHtml += '<br><br>';
+                depositsHtml += '<form method="POST" action="' + createDepositUrl + '" style="display: inline;">';
+                depositsHtml += '<input type="hidden" name="custpage_action" value="createdeposit">';
+                depositsHtml += '<input type="hidden" name="settlementId" value="' + settlementId + '">';
+                depositsHtml += '<button type="submit" class="windcave-btn windcave-btn-primary">Create Supplementary Deposit</button>';
+                depositsHtml += '</form>';
+                depositsHtml += '</div>';
+            }
+        }
+
+        depositsHtml += '</div>';
+
+        const depositsField = form.addField({
+            id: 'custpage_deposits',
+            type: serverWidget.FieldType.INLINEHTML,
+            label: 'Deposits'
+        });
+        depositsField.defaultValue = depositsHtml;
+
         // Get all transactions for this settlement
         const transactions = reconciliation.getAllTransactionsForSettlement(settlementId);
+
+        // Build the suitelet URL for manual matching
+        const suiteletUrl = url.resolveScript({
+            scriptId: runtime.getCurrentScript().id,
+            deploymentId: runtime.getCurrentScript().deploymentId
+        });
 
         // Transaction details table
         let txnHtml = '<div class="windcave-info-panel">';
@@ -791,11 +890,20 @@ define([
             txnHtml += '<th>Merchant Ref</th>';
             txnHtml += '<th>NS Transaction</th>';
             txnHtml += '<th>Status</th>';
+            txnHtml += '<th>Action</th>';
             txnHtml += '</tr></thead><tbody>';
 
             for (const txn of transactions) {
                 const isMatched = txn.matched === true || txn.matched === 'T';
-                const rowClass = isMatched ? 'windcave-txn-matched' : 'windcave-txn-unmatched';
+                const inDeposit = txn.inDeposit === true || txn.inDeposit === 'T';
+                let rowClass = '';
+                if (isMatched && inDeposit) {
+                    rowClass = 'windcave-txn-deposited';
+                } else if (isMatched) {
+                    rowClass = 'windcave-txn-matched';
+                } else {
+                    rowClass = 'windcave-txn-unmatched';
+                }
 
                 txnHtml += '<tr class="' + rowClass + '">';
                 txnHtml += '<td>' + txn.transactionId + '</td>';
@@ -805,7 +913,7 @@ define([
                 txnHtml += '<td>' + (txn.authCode || '-') + '</td>';
                 txnHtml += '<td>' + (txn.merchantReference || '-') + '</td>';
 
-                // NS Transaction link
+                // NS Transaction link or manual match dropdown
                 if (txn.nsTransactionId) {
                     const nsUrl = url.resolveRecord({
                         recordType: 'transaction',
@@ -818,14 +926,32 @@ define([
 
                 // Status
                 if (isMatched) {
-                    const inDeposit = txn.inDeposit === true || txn.inDeposit === 'T';
                     if (inDeposit) {
-                        txnHtml += '<td style="color: #28a745;">&#10004; Matched & Deposited</td>';
+                        txnHtml += '<td style="color: #28a745;">&#10004; Deposited</td>';
                     } else {
-                        txnHtml += '<td style="color: #28a745;">&#10004; Matched</td>';
+                        txnHtml += '<td style="color: #17a2b8;">&#10004; Matched (pending deposit)</td>';
                     }
                 } else {
                     txnHtml += '<td style="color: #dc3545;">&#10008; ' + (txn.matchError || 'Unmatched') + '</td>';
+                }
+
+                // Action column
+                if (!isMatched) {
+                    // Show manual match form for unmatched transactions
+                    txnHtml += '<td>';
+                    txnHtml += '<form method="POST" action="' + suiteletUrl + '" class="manual-match-form">';
+                    txnHtml += '<input type="hidden" name="custpage_action" value="manualmatch">';
+                    txnHtml += '<input type="hidden" name="txnDetailId" value="' + txn.internalId + '">';
+                    txnHtml += '<input type="hidden" name="settlementId" value="' + settlementId + '">';
+                    txnHtml += '<div class="match-input-group">';
+                    txnHtml += '<input type="text" name="nsTransactionId" placeholder="NS Transaction ID" class="match-input" required>';
+                    txnHtml += '<button type="submit" class="windcave-btn windcave-btn-sm">Match</button>';
+                    txnHtml += '</div>';
+                    txnHtml += '<div class="match-help">Enter payment/cash sale internal ID</div>';
+                    txnHtml += '</form>';
+                    txnHtml += '</td>';
+                } else {
+                    txnHtml += '<td>-</td>';
                 }
 
                 txnHtml += '</tr>';
@@ -843,14 +969,76 @@ define([
         });
         txnField.defaultValue = txnHtml;
 
-        // Add simple client script for back button
-        form.addField({
-            id: 'custpage_script',
-            type: serverWidget.FieldType.INLINEHTML,
-            label: 'Script'
-        }).defaultValue = '<script>function goBack() { history.back(); }</script>';
+        // Add client script
+        form.clientScriptModulePath = './windcave_settlement_client.js';
 
         response.writePage(form);
+    }
+
+    /**
+     * Adds additional styling for the details page
+     * @param {Object} form - ServerWidget Form
+     */
+    function addDetailsPageStyling(form) {
+        const styleField = form.addField({
+            id: 'custpage_detail_styles',
+            type: serverWidget.FieldType.INLINEHTML,
+            label: 'Detail Styles'
+        });
+
+        styleField.defaultValue = `
+            <style>
+                .windcave-txn-deposited { background-color: #d4edda !important; }
+                .windcave-txn-matched { background-color: #d1ecf1 !important; }
+                .windcave-txn-unmatched { background-color: #f8d7da !important; }
+                .windcave-btn {
+                    display: inline-block;
+                    padding: 6px 12px;
+                    font-size: 13px;
+                    font-weight: 500;
+                    text-align: center;
+                    white-space: nowrap;
+                    vertical-align: middle;
+                    cursor: pointer;
+                    border: 1px solid transparent;
+                    border-radius: 4px;
+                    text-decoration: none;
+                }
+                .windcave-btn-primary {
+                    color: #fff;
+                    background-color: #007bff;
+                    border-color: #007bff;
+                }
+                .windcave-btn-primary:hover {
+                    background-color: #0056b3;
+                    border-color: #004085;
+                }
+                .windcave-btn-sm {
+                    padding: 3px 8px;
+                    font-size: 12px;
+                }
+                .match-input-group {
+                    display: flex;
+                    gap: 5px;
+                    align-items: center;
+                }
+                .match-input {
+                    width: 120px;
+                    padding: 4px 8px;
+                    font-size: 12px;
+                    border: 1px solid #ced4da;
+                    border-radius: 3px;
+                }
+                .match-help {
+                    font-size: 10px;
+                    color: #6c757d;
+                    margin-top: 3px;
+                }
+                .manual-match-form {
+                    margin: 0;
+                }
+            </style>
+        `;
     }
 
     /**
@@ -982,6 +1170,103 @@ define([
         }
 
         return results;
+    }
+
+    /**
+     * Handles manual match POST request
+     * @param {Object} context - Request/Response context
+     */
+    function handleManualMatch(context) {
+        const request = context.request;
+        const txnDetailId = request.parameters.txnDetailId;
+        const nsTransactionId = request.parameters.nsTransactionId;
+        const settlementId = request.parameters.settlementId;
+
+        const result = reconciliation.manualMatchTransaction(txnDetailId, nsTransactionId);
+
+        redirect.toSuitelet({
+            scriptId: runtime.getCurrentScript().id,
+            deploymentId: runtime.getCurrentScript().deploymentId,
+            parameters: {
+                action: 'viewdetails',
+                settlementId: settlementId,
+                message: result.success ? 'Transaction matched successfully' : null,
+                error: result.success ? null : result.error
+            }
+        });
+    }
+
+    /**
+     * Handles create supplementary deposit POST request
+     * @param {Object} context - Request/Response context
+     */
+    function handleCreateSupplementaryDeposit(context) {
+        const request = context.request;
+        const settlementId = request.parameters.settlementId;
+
+        // Get bank account from configuration
+        let bankAccountId = null;
+        try {
+            const configs = reconciliation.loadAllConfigurations();
+            if (configs.length > 0) {
+                bankAccountId = configs[0].bankAccount;
+            }
+        } catch (e) {
+            redirect.toSuitelet({
+                scriptId: runtime.getCurrentScript().id,
+                deploymentId: runtime.getCurrentScript().deploymentId,
+                parameters: {
+                    action: 'viewdetails',
+                    settlementId: settlementId,
+                    error: 'Could not load configuration: ' + e.message
+                }
+            });
+            return;
+        }
+
+        const result = reconciliation.createSupplementaryDeposit(settlementId, bankAccountId);
+
+        redirect.toSuitelet({
+            scriptId: runtime.getCurrentScript().id,
+            deploymentId: runtime.getCurrentScript().deploymentId,
+            parameters: {
+                action: 'viewdetails',
+                settlementId: settlementId,
+                message: result.success ?
+                    'Created supplementary deposit with ' + result.paymentsAdded + ' payment(s)' : null,
+                error: result.success ? null : result.error
+            }
+        });
+    }
+
+    /**
+     * Handles transaction search request (returns JSON)
+     * @param {Object} context - Request/Response context
+     */
+    function handleSearchTransactions(context) {
+        const request = context.request;
+        const response = context.response;
+        const searchText = request.parameters.searchText || '';
+        const amount = request.parameters.amount ? parseFloat(request.parameters.amount) : null;
+
+        try {
+            const results = reconciliation.searchNetSuiteTransactions({
+                searchText: searchText,
+                amount: amount
+            });
+
+            response.setHeader({
+                name: 'Content-Type',
+                value: 'application/json'
+            });
+            response.write(JSON.stringify({ success: true, results: results }));
+        } catch (e) {
+            response.setHeader({
+                name: 'Content-Type',
+                value: 'application/json'
+            });
+            response.write(JSON.stringify({ success: false, error: e.message }));
+        }
     }
 
     return {

@@ -123,5 +123,13 @@
             <displaytype>NORMAL</displaytype>
             <defaultvalue>F</defaultvalue>
         </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_bank_deposit">
+            <label>Bank Deposit</label>
+            <description>Link to the Bank Deposit this transaction is included in</description>
+            <fieldtype>SELECT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <selectrecordtype>-4</selectrecordtype>
+        </customrecordcustomfield>
     </customrecordcustomfields>
 </customrecordtype>

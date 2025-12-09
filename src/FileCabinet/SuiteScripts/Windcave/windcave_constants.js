@@ -70,7 +70,8 @@ define([], function() {
         NS_TRANSACTION: 'custrecord_wtd_ns_transaction',
         MATCHED: 'custrecord_wtd_matched',
         MATCH_ERROR: 'custrecord_wtd_match_error',
-        IN_DEPOSIT: 'custrecord_wtd_in_deposit'
+        IN_DEPOSIT: 'custrecord_wtd_in_deposit',
+        BANK_DEPOSIT: 'custrecord_wtd_bank_deposit'
     };
 
     /**

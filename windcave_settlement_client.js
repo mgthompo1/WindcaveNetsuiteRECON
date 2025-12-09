@@ -86,10 +86,26 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url'], function(currentRecord, dial
         history.back();
     }
 
+    /**
+     * Confirm before creating supplementary deposit
+     * @param {string} formId - Form element ID
+     */
+    function confirmSupplementaryDeposit(formId) {
+        dialog.confirm({
+            title: 'Create Supplementary Deposit',
+            message: 'This will create a new Bank Deposit for the matched transactions that are not yet deposited. Continue?'
+        }).then(function(result) {
+            if (result) {
+                document.getElementById(formId).submit();
+            }
+        });
+    }
+
     return {
         pageInit: pageInit,
         submitFetch: submitFetch,
         clearFilter: clearFilter,
-        goBack: goBack
+        goBack: goBack,
+        confirmSupplementaryDeposit: confirmSupplementaryDeposit
     };
 });

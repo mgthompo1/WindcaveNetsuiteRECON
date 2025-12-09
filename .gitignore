@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# SuiteCloud CLI
+.suitecloud-sdk/
+suitecloud.config.js
+
+# Authentication
+.authentication/
+authID
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Lock files (optional - you may want to keep package-lock.json)
+# package-lock.json

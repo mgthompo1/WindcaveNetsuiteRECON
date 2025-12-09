@@ -1,0 +1,129 @@
+<customrecordtype scriptid="customrecord_windcave_settlement">
+    <recordname>Windcave Settlement</recordname>
+    <includename>T</includename>
+    <showid>T</showid>
+    <shownotes>F</shownotes>
+    <allowattachments>F</allowattachments>
+    <allowinlineediting>F</allowinlineediting>
+    <allowinlinedeleting>F</allowinlinedeleting>
+    <allowquickadd>F</allowquickadd>
+    <allowquicksearch>T</allowquicksearch>
+    <allowuiaccess>T</allowuiaccess>
+    <description>Tracks processed Windcave settlements for reconciliation</description>
+    <isinactive>F</isinactive>
+    <customrecordcustomfields>
+        <customrecordcustomfield scriptid="custrecord_ws_settlement_id">
+            <label>Settlement ID</label>
+            <description>Windcave Settlement ID</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_settlement_date">
+            <label>Settlement Date</label>
+            <description>Date of the settlement</description>
+            <fieldtype>DATE</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_amount">
+            <label>Amount</label>
+            <description>Settlement amount</description>
+            <fieldtype>CURRENCY</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_currency">
+            <label>Currency</label>
+            <description>Settlement currency code</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_status">
+            <label>Windcave Status</label>
+            <description>Status from Windcave (Pending/Done/Void)</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_crdr">
+            <label>CR/DR</label>
+            <description>Credit or Debit indicator</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_reference_number">
+            <label>Reference Number</label>
+            <description>Windcave reference number</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_merchant_id">
+            <label>Merchant ID</label>
+            <description>Windcave Merchant ID</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_customer_id">
+            <label>Customer ID</label>
+            <description>Windcave Customer ID</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_bank_deposit">
+            <label>Bank Deposit</label>
+            <description>Internal ID of created Bank Deposit record</description>
+            <fieldtype>INTEGER</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_processed">
+            <label>Processed</label>
+            <description>Has this settlement been processed</description>
+            <fieldtype>CHECKBOX</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <defaultvalue>F</defaultvalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_matched_count">
+            <label>Matched Transactions</label>
+            <description>Number of matched transactions</description>
+            <fieldtype>INTEGER</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_unmatched_count">
+            <label>Unmatched Transactions</label>
+            <description>Number of unmatched transactions</description>
+            <fieldtype>INTEGER</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_matched_amount">
+            <label>Matched Amount</label>
+            <description>Total matched amount</description>
+            <fieldtype>CURRENCY</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_error_message">
+            <label>Error Message</label>
+            <description>Error or warning messages from processing</description>
+            <fieldtype>TEXTAREA</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_processed_date">
+            <label>Processed Date</label>
+            <description>Date/time when settlement was processed</description>
+            <fieldtype>DATETIMETZ</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+    </customrecordcustomfields>
+</customrecordtype>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<customrecordtype scriptid="customrecord_windcave_txn_detail">
+    <recordname>Windcave Transaction Detail</recordname>
+    <includename>T</includename>
+    <showid>T</showid>
+    <shownotes>F</shownotes>
+    <allowattachments>F</allowattachments>
+    <allowinlineediting>T</allowinlineediting>
+    <allowinlineadd>F</allowinlineadd>
+    <allowinlinedeleting>F</allowinlinedeleting>
+    <allowquickadd>F</allowquickadd>
+    <allowquicksearch>T</allowquicksearch>
+    <allowuiaccess>T</allowuiaccess>
+    <description>Individual transactions within a Windcave settlement batch</description>
+    <isinactive>F</isinactive>
+    <metadataschemaversion>1.0</metadataschemaversion>
+    <permissions>
+        <permission>
+            <permittedrole>[scriptid=customrole_administrator]</permittedrole>
+            <permittedlevel>FULL</permittedlevel>
+        </permission>
+    </permissions>
+    <customrecordcustomfields>
+        <customrecordcustomfield scriptid="custrecord_wtd_parent_settlement">
+            <label>Parent Settlement</label>
+            <description>Link to parent Windcave Settlement record</description>
+            <fieldtype>SELECT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <selectrecordtype>[scriptid=customrecord_windcave_settlement]</selectrecordtype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_transaction_id">
+            <label>Transaction ID</label>
+            <description>Unique Windcave transaction identifier</description>
+            <fieldtype>FREEFORMTEXT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_merchant_reference">
+            <label>Merchant Reference</label>
+            <description>Reference provided in transaction request (NetSuite Internal ID)</description>
+            <fieldtype>FREEFORMTEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_amount">
+            <label>Amount</label>
+            <description>Transaction amount</description>
+            <fieldtype>CURRENCY</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_currency">
+            <label>Currency</label>
+            <description>Transaction currency (ISO 4217 code)</description>
+            <fieldtype>FREEFORMTEXT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_type">
+            <label>Transaction Type</label>
+            <description>Transaction type (Purchase, Refund, etc.)</description>
+            <fieldtype>FREEFORMTEXT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_method">
+            <label>Payment Method</label>
+            <description>Payment method used (Card, etc.)</description>
+            <fieldtype>FREEFORMTEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_auth_code">
+            <label>Auth Code</label>
+            <description>Authorization code from card scheme</description>
+            <fieldtype>FREEFORMTEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_datetime_utc">
+            <label>Transaction DateTime (UTC)</label>
+            <description>Transaction date/time in UTC</description>
+            <fieldtype>DATETIMETZ</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_username">
+            <label>API Username</label>
+            <description>The API username which sent the transaction</description>
+            <fieldtype>FREEFORMTEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_ns_transaction">
+            <label>NetSuite Transaction</label>
+            <description>Link to matched NetSuite transaction (Payment, Cash Sale)</description>
+            <fieldtype>SELECT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <selectrecordtype>-30</selectrecordtype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_matched">
+            <label>Matched</label>
+            <description>Indicates if this transaction was matched to a NetSuite payment</description>
+            <fieldtype>CHECKBOX</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <defaultvalue>F</defaultvalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_match_error">
+            <label>Match Error</label>
+            <description>Error message if matching failed</description>
+            <fieldtype>TEXTAREA</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_in_deposit">
+            <label>Included in Deposit</label>
+            <description>Indicates if this transaction was included in bank deposit</description>
+            <fieldtype>CHECKBOX</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <defaultvalue>F</defaultvalue>
+        </customrecordcustomfield>
+    </customrecordcustomfields>
+</customrecordtype>

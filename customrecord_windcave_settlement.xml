@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<customrecordtype scriptid="customrecord_windcave_settlement">
+    <recordname>Windcave Settlement</recordname>
+    <includename>T</includename>
+    <showid>T</showid>
+    <shownotes>F</shownotes>
+    <allowattachments>F</allowattachments>
+    <allowinlineediting>T</allowinlineediting>
+    <allowinlineadd>F</allowinlineadd>
+    <allowinlinedeleting>F</allowinlinedeleting>
+    <allowquickadd>F</allowquickadd>
+    <allowquicksearch>T</allowquicksearch>
+    <allowuiaccess>T</allowuiaccess>
+    <description>Tracks Windcave settlement batches for bank reconciliation</description>
+    <isinactive>F</isinactive>
+    <metadataschemaversion>1.0</metadataschemaversion>
+    <permissions>
+        <permission>
+            <permittedrole>[scriptid=customrole_administrator]</permittedrole>
+            <permittedlevel>FULL</permittedlevel>
+        </permission>
+    </permissions>
+    <customrecordcustomfields>
+        <customrecordcustomfield scriptid="custrecord_ws_settlement_id">
+            <label>Settlement ID</label>
+            <description>Unique Windcave settlement identifier</description>
+            <fieldtype>FREEFORMTEXT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <isformula>F</isformula>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_settlement_date">
+            <label>Settlement Date</label>
+            <description>Date the settlement was processed by Windcave</description>
+            <fieldtype>DATE</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_amount">
+            <label>Amount</label>
+            <description>Total settlement amount</description>
+            <fieldtype>CURRENCY</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_currency">
+            <label>Currency</label>
+            <description>Settlement currency (ISO 4217 code)</description>
+            <fieldtype>FREEFORMTEXT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_status">
+            <label>Windcave Status</label>
+            <description>Settlement status from Windcave (Pending, Done, Void)</description>
+            <fieldtype>FREEFORMTEXT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_crdr">
+            <label>CR/DR</label>
+            <description>Credit (CR) or Debit (DR) indicator</description>
+            <fieldtype>FREEFORMTEXT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_reference_number">
+            <label>Reference Number</label>
+            <description>Windcave settlement reference number</description>
+            <fieldtype>FREEFORMTEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_merchant_id">
+            <label>Merchant ID</label>
+            <description>Windcave Merchant ID for this settlement</description>
+            <fieldtype>FREEFORMTEXT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_customer_id">
+            <label>Customer ID</label>
+            <description>Windcave Customer ID</description>
+            <fieldtype>FREEFORMTEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_bank_deposit">
+            <label>Bank Deposit</label>
+            <description>Link to created NetSuite Bank Deposit record</description>
+            <fieldtype>SELECT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <selectrecordtype>-4</selectrecordtype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_processed">
+            <label>Processed</label>
+            <description>Indicates if this settlement has been fully processed</description>
+            <fieldtype>CHECKBOX</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <defaultvalue>F</defaultvalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_matched_count">
+            <label>Matched Transactions</label>
+            <description>Number of transactions successfully matched to NetSuite payments</description>
+            <fieldtype>INTEGER</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_unmatched_count">
+            <label>Unmatched Transactions</label>
+            <description>Number of transactions that could not be matched</description>
+            <fieldtype>INTEGER</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_matched_amount">
+            <label>Matched Amount</label>
+            <description>Total amount of matched transactions</description>
+            <fieldtype>CURRENCY</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_error_message">
+            <label>Error Message</label>
+            <description>Error details if processing failed</description>
+            <fieldtype>TEXTAREA</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_ws_processed_date">
+            <label>Processed Date</label>
+            <description>Date/time this settlement was processed in NetSuite</description>
+            <fieldtype>DATETIMETZ</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+    </customrecordcustomfields>
+</customrecordtype>

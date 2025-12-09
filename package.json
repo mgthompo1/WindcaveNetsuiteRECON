@@ -1,0 +1,35 @@
+{
+  "name": "windcave-settlement-reconciliation",
+  "version": "1.0.0",
+  "description": "NetSuite integration for Windcave payment processor settlement reconciliation",
+  "main": "src/FileCabinet/SuiteScripts/Windcave/windcave_settlement_scheduled.js",
+  "scripts": {
+    "setup": "suitecloud account:setup",
+    "validate": "suitecloud project:validate",
+    "deploy": "suitecloud project:deploy",
+    "deploy:preview": "suitecloud project:deploy --dryrun",
+    "import": "suitecloud object:import",
+    "list-objects": "suitecloud object:list"
+  },
+  "keywords": [
+    "netsuite",
+    "suitescript",
+    "windcave",
+    "payment",
+    "settlement",
+    "reconciliation",
+    "bank-deposit"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "devDependencies": {
+    "@oracle/suitecloud-cli": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

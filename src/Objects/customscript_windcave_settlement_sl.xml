@@ -1,0 +1,18 @@
+<suitelet scriptid="customscript_windcave_settlement_sl">
+    <name>Windcave Settlement Dashboard</name>
+    <scriptfile>[/SuiteScripts/Windcave/windcave_settlement_suitelet.js]</scriptfile>
+    <description>Dashboard for viewing, filtering, and managing Windcave settlements and bank reconciliation</description>
+    <isinactive>F</isinactive>
+    <notifyadmins>F</notifyadmins>
+    <notifyemails></notifyemails>
+    <notifyowner>T</notifyowner>
+    <scriptdeployments>
+        <scriptdeployment scriptid="customdeploy_windcave_settlement_sl">
+            <status>RELEASED</status>
+            <title>Windcave Settlement Dashboard</title>
+            <isdeployed>T</isdeployed>
+            <loglevel>DEBUG</loglevel>
+            <allroles>T</allroles>
+        </scriptdeployment>
+    </scriptdeployments>
+</suitelet>

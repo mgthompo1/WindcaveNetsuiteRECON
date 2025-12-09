@@ -1,0 +1,118 @@
+<customrecordtype scriptid="customrecord_windcave_txn_detail">
+    <recordname>Windcave Transaction Detail</recordname>
+    <includename>T</includename>
+    <showid>T</showid>
+    <shownotes>F</shownotes>
+    <allowattachments>F</allowattachments>
+    <allowinlineediting>F</allowinlineediting>
+    <allowinlinedeleting>F</allowinlinedeleting>
+    <allowquickadd>F</allowquickadd>
+    <allowquicksearch>T</allowquicksearch>
+    <allowuiaccess>T</allowuiaccess>
+    <description>Individual transaction details within a Windcave settlement</description>
+    <isinactive>F</isinactive>
+    <customrecordcustomfields>
+        <customrecordcustomfield scriptid="custrecord_wtd_parent_settlement">
+            <label>Parent Settlement</label>
+            <description>Link to parent Windcave Settlement record</description>
+            <fieldtype>SELECT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <selectrecordtype>[customrecord_windcave_settlement]</selectrecordtype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_transaction_id">
+            <label>Transaction ID</label>
+            <description>Windcave Transaction ID</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_merchant_reference">
+            <label>Merchant Reference</label>
+            <description>Merchant reference (contains NetSuite transaction ID)</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_amount">
+            <label>Amount</label>
+            <description>Transaction amount</description>
+            <fieldtype>CURRENCY</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_currency">
+            <label>Currency</label>
+            <description>Transaction currency code</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_type">
+            <label>Transaction Type</label>
+            <description>Type (Purchase/Refund)</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_method">
+            <label>Payment Method</label>
+            <description>Payment method/card type</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_auth_code">
+            <label>Auth Code</label>
+            <description>Authorization code</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_datetime_utc">
+            <label>Transaction DateTime (UTC)</label>
+            <description>Transaction date/time in UTC</description>
+            <fieldtype>DATETIMETZ</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_username">
+            <label>API Username</label>
+            <description>Windcave API username used</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_ns_transaction">
+            <label>NetSuite Transaction</label>
+            <description>Matched NetSuite transaction</description>
+            <fieldtype>SELECT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <selectrecordtype>-30</selectrecordtype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_matched">
+            <label>Matched</label>
+            <description>Was this transaction matched to a NetSuite payment</description>
+            <fieldtype>CHECKBOX</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <defaultvalue>F</defaultvalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_match_error">
+            <label>Match Error</label>
+            <description>Error message if matching failed</description>
+            <fieldtype>TEXTAREA</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wtd_in_deposit">
+            <label>Included in Deposit</label>
+            <description>Has this transaction been included in a bank deposit</description>
+            <fieldtype>CHECKBOX</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <defaultvalue>F</defaultvalue>
+        </customrecordcustomfield>
+    </customrecordcustomfields>
+</customrecordtype>

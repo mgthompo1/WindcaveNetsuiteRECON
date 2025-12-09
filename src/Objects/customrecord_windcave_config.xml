@@ -1,0 +1,90 @@
+<customrecordtype scriptid="customrecord_windcave_config">
+    <recordname>Windcave Configuration</recordname>
+    <includename>F</includename>
+    <showid>T</showid>
+    <shownotes>F</shownotes>
+    <allowattachments>F</allowattachments>
+    <allowinlineediting>F</allowinlineediting>
+    <allowinlinedeleting>F</allowinlinedeleting>
+    <allowquickadd>F</allowquickadd>
+    <allowquicksearch>F</allowquicksearch>
+    <allowuiaccess>T</allowuiaccess>
+    <description>Stores Windcave API configuration and credentials for settlement reconciliation</description>
+    <isinactive>F</isinactive>
+    <customrecordcustomfields>
+        <customrecordcustomfield scriptid="custrecord_wc_api_username">
+            <label>API Username</label>
+            <description>Windcave REST API Username for Basic Authentication</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_api_password">
+            <label>API Password (deprecated)</label>
+            <description>Deprecated - use API Key field instead</description>
+            <fieldtype>PASSWORD</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>HIDDEN</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_api_key">
+            <label>API Key</label>
+            <description>Windcave REST API Key for Basic Authentication</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_merchant_id">
+            <label>Merchant ID</label>
+            <description>Windcave Merchant ID</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_customer_id">
+            <label>Customer ID</label>
+            <description>Windcave Customer ID (optional - use to query all merchants under customer)</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_environment">
+            <label>Environment</label>
+            <description>Windcave API Environment (sec=Production, uat=Testing)</description>
+            <fieldtype>TEXT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <defaultvalue>sec</defaultvalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_bank_account">
+            <label>Bank Account</label>
+            <description>NetSuite Bank Account for Windcave settlements</description>
+            <fieldtype>SELECT</fieldtype>
+            <ismandatory>T</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <selectrecordtype>-112</selectrecordtype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_lookback_days">
+            <label>Lookback Days</label>
+            <description>Number of days to look back for settlements (default: 1)</description>
+            <fieldtype>INTEGER</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <defaultvalue>1</defaultvalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_notification_email">
+            <label>Notification Email</label>
+            <description>Email address for daily settlement processing summary</description>
+            <fieldtype>EMAIL</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_is_active">
+            <label>Active</label>
+            <description>Enable/disable settlement processing</description>
+            <fieldtype>CHECKBOX</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <defaultvalue>T</defaultvalue>
+        </customrecordcustomfield>
+    </customrecordcustomfields>
+</customrecordtype>

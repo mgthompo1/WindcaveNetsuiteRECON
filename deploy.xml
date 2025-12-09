@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Windcave Settlement Integration - Deployment Configuration
+
+    DEPLOYMENT INSTRUCTIONS:
+    =======================
+
+    1. CUSTOM RECORDS (Create in NetSuite UI: Customization > Lists, Records, & Fields > Record Types)
+       - Import or manually create the three custom record types from the XML files:
+         * customrecord_windcave_config.xml
+         * customrecord_windcave_settlement.xml
+         * customrecord_windcave_txn_detail.xml
+
+    2. UPLOAD SCRIPTS (File Cabinet: Documents > Files > SuiteScripts > Windcave)
+       Upload all .js files to File Cabinet:
+       - windcave_constants.js
+       - windcave_api_module.js
+       - windcave_reconciliation_lib.js
+       - windcave_settlement_scheduled.js
+       - windcave_settlement_suitelet.js
+       - windcave_settlement_client.js
+
+    3. CREATE SCRIPT RECORDS
+
+       A. Scheduled Script (Customization > Scripting > Scripts > New)
+          - Name: Windcave Settlement Scheduled
+          - Script File: windcave_settlement_scheduled.js
+          - Script ID: customscript_windcave_settlement_ss
+
+          Deployment:
+          - Deployment ID: customdeploy_windcave_settlement_ss
+          - Status: Scheduled
+          - Execute As Role: Administrator (or custom role with required permissions)
+          - Schedule: Daily at 6:00 AM (or preferred time after settlements are available)
+
+       B. Suitelet (Customization > Scripting > Scripts > New)
+          - Name: Windcave Settlement Dashboard
+          - Script File: windcave_settlement_suitelet.js
+          - Script ID: customscript_windcave_settlement_sl
+
+          Deployment:
+          - Deployment ID: customdeploy_windcave_settlement_sl
+          - Status: Released
+          - Available Without Login: No
+          - Execute As Role: Administrator
+          - Audience: All Roles (or specific finance roles)
+
+    4. CREATE CONFIGURATION RECORD
+       - Navigate to: Lists > Custom > Windcave Configuration
+       - Create new record with:
+         * API Username: (your Windcave REST API username)
+         * API Password: (your Windcave REST API password)
+         * Merchant ID: (your Windcave Merchant ID)
+         * Environment: sec (production) or uat (testing)
+         * Bank Account: (select your Windcave bank account)
+         * Lookback Days: 1 (or desired number)
+         * Notification Email: (email for daily summaries)
+         * Active: Yes
+
+    5. ADD MENU LINK (Optional)
+       - Customization > Centers and Tabs > Center Links
+       - Add link to Suitelet under Finance or custom center
+
+    6. REQUIRED PERMISSIONS
+       Ensure the execution role has:
+       - Custom Record: Full access to all Windcave custom records
+       - Bank Deposit: Create, Edit
+       - Customer Payment: View
+       - Cash Sale: View
+       - Transaction: View
+       - List: Saved Search - Create
+
+    7. TESTING
+       - Start with UAT environment in configuration
+       - Use manual fetch in dashboard to test date range
+       - Verify transactions match expected NetSuite payments
+       - Switch to production (sec) when ready
+-->
+<deploy>
+    <scripts>
+        <script type="scheduled">
+            <name>Windcave Settlement Scheduled</name>
+            <scriptid>customscript_windcave_settlement_ss</scriptid>
+            <file>windcave_settlement_scheduled.js</file>
+            <description>Daily fetch of Windcave settlements and automatic bank deposit creation</description>
+            <deployment>
+                <deploymentid>customdeploy_windcave_settlement_ss</deploymentid>
+                <status>SCHEDULED</status>
+                <schedule>
+                    <frequency>DAILY</frequency>
+                    <time>06:00</time>
+                </schedule>
+            </deployment>
+        </script>
+        <script type="suitelet">
+            <name>Windcave Settlement Dashboard</name>
+            <scriptid>customscript_windcave_settlement_sl</scriptid>
+            <file>windcave_settlement_suitelet.js</file>
+            <description>Dashboard for viewing and managing Windcave settlements</description>
+            <deployment>
+                <deploymentid>customdeploy_windcave_settlement_sl</deploymentid>
+                <status>RELEASED</status>
+                <availablewithoutlogin>F</availablewithoutlogin>
+            </deployment>
+        </script>
+    </scripts>
+</deploy>

@@ -1,0 +1,24 @@
+<scheduledscript scriptid="customscript_windcave_settlement_ss">
+    <name>Windcave Settlement Scheduled</name>
+    <scriptfile>[/SuiteScripts/Windcave/windcave_settlement_scheduled.js]</scriptfile>
+    <description>Daily fetch of Windcave settlements and automatic bank deposit creation for reconciliation</description>
+    <isinactive>F</isinactive>
+    <notifyadmins>T</notifyadmins>
+    <notifyemails></notifyemails>
+    <notifyowner>T</notifyowner>
+    <scriptdeployments>
+        <scriptdeployment scriptid="customdeploy_windcave_settlement_ss">
+            <status>SCHEDULED</status>
+            <title>Windcave Settlement Daily</title>
+            <isdeployed>T</isdeployed>
+            <loglevel>DEBUG</loglevel>
+            <recurrence>
+                <daily>
+                    <startdate>2025-01-01</startdate>
+                    <starttime>06:00:00Z</starttime>
+                    <everyxdays>1</everyxdays>
+                </daily>
+            </recurrence>
+        </scriptdeployment>
+    </scriptdeployments>
+</scheduledscript>

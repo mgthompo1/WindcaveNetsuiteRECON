@@ -334,6 +334,119 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
         }
 
         /**
+         * Finds a NetSuite payment/transaction by auth code and amount
+         * Falls back matching when merchantReference is not available
+         * @param {string} authCode - Authorization code from Windcave
+         * @param {number} amount - Transaction amount
+         * @param {string} transactionId - Windcave transaction ID (pnref)
+         * @returns {Object|null} Transaction info or null if not found
+         */
+        function findNetSuiteTransactionByAuthCode(authCode, amount, transactionId) {
+            if (!authCode || authCode.trim() === '') {
+                return null;
+            }
+
+            try {
+                // Search for transactions with matching auth code
+                // NetSuite stores auth code in 'authcode' field on payments
+                const txnSearch = search.create({
+                    type: search.Type.TRANSACTION,
+                    filters: [
+                        ['mainline', 'is', 'T'],
+                        'AND',
+                        [
+                            ['type', 'anyof', 'CustPymt'],
+                            'OR',
+                            ['type', 'anyof', 'CashSale']
+                        ],
+                        'AND',
+                        ['undepfunds', 'is', 'T'], // Only undeposited
+                        'AND',
+                        [
+                            ['authcode', 'is', authCode],
+                            'OR',
+                            ['pnrefnum', 'is', transactionId],
+                            'OR',
+                            ['custbody_windcave_txn_id', 'is', transactionId] // Custom field if exists
+                        ]
+                    ],
+                    columns: [
+                        'internalid',
+                        'type',
+                        'tranid',
+                        'amount',
+                        'currency',
+                        'status',
+                        'undepfunds',
+                        'authcode',
+                        'pnrefnum'
+                    ]
+                });
+
+                const results = txnSearch.run().getRange({ start: 0, end: 10 });
+
+                if (!results || results.length === 0) {
+                    log.debug({
+                        title: MODULE_NAME + '.findNetSuiteTransactionByAuthCode',
+                        details: 'No transaction found for auth code: ' + authCode
+                    });
+                    return null;
+                }
+
+                // If multiple results, try to match by amount as well
+                const tolerance = constants.MISC.AMOUNT_TOLERANCE;
+                for (const result of results) {
+                    const txnAmount = parseFloat(result.getValue('amount'));
+                    if (Math.abs(txnAmount - amount) <= tolerance) {
+                        log.audit({
+                            title: MODULE_NAME + '.findNetSuiteTransactionByAuthCode',
+                            details: 'Found match by auth code: ' + authCode + ', amount: ' + amount
+                        });
+                        return {
+                            internalId: result.getValue('internalid'),
+                            type: result.getValue('type'),
+                            tranId: result.getValue('tranid'),
+                            amount: txnAmount,
+                            currency: result.getText('currency'),
+                            status: result.getValue('status'),
+                            undepositedFunds: result.getValue('undepfunds'),
+                            matchMethod: 'authcode'
+                        };
+                    }
+                }
+
+                // If no exact amount match, return first result if only one
+                if (results.length === 1) {
+                    const result = results[0];
+                    return {
+                        internalId: result.getValue('internalid'),
+                        type: result.getValue('type'),
+                        tranId: result.getValue('tranid'),
+                        amount: parseFloat(result.getValue('amount')),
+                        currency: result.getText('currency'),
+                        status: result.getValue('status'),
+                        undepositedFunds: result.getValue('undepfunds'),
+                        matchMethod: 'authcode'
+                    };
+                }
+
+                log.debug({
+                    title: MODULE_NAME + '.findNetSuiteTransactionByAuthCode',
+                    details: 'Multiple results found but none match amount. Auth: ' + authCode + ', Amount: ' + amount
+                });
+                return null;
+
+            } catch (e) {
+                // If the search fails (e.g., field doesn't exist), log and return null
+                log.debug({
+                    title: MODULE_NAME + '.findNetSuiteTransactionByAuthCode',
+                    details: 'Search failed (fields may not exist): ' + e.message
+                });
+                return null;
+            }
+        }
+
+        /**
          * Validates that a payment can be added to a bank deposit
          * @param {Object} nsTransaction - NetSuite transaction info
          * @param {Object} windcaveTxn - Windcave transaction data
@@ -399,7 +512,24 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                 }
 
                 // Find matching NetSuite transaction
-                const nsTransaction = findNetSuiteTransaction(txn.merchantReference);
+                // Strategy 1: Match by merchantReference (NetSuite internal ID)
+                let nsTransaction = findNetSuiteTransaction(txn.merchantReference);
+
+                // Strategy 2: If no match, try by auth code and/or pnref
+                if (!nsTransaction && (txn.authCode || txn.id)) {
+                    nsTransaction = findNetSuiteTransactionByAuthCode(
+                        txn.authCode,
+                        parseFloat(txn.amount),
+                        txn.id  // Windcave transaction ID can be used as pnref
+                    );
+                    if (nsTransaction) {
+                        log.audit({
+                            title: MODULE_NAME + '.matchTransactions',
+                            details: 'Matched by auth code/pnref fallback: WC ' + txn.id + ' -> NS ' + nsTransaction.internalId
+                        });
+                    }
+                }
+
                 const validation = validatePaymentForDeposit(nsTransaction, txn);
 
                 if (validation.isValid) {
@@ -1254,6 +1384,7 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
             createSettlementRecord,
             createTransactionDetailRecord,
             findNetSuiteTransaction,
+            findNetSuiteTransactionByAuthCode,
             validatePaymentForDeposit,
             matchTransactions,
             createBankDeposit,

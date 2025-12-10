@@ -11,12 +11,99 @@ define([
     'N/email',
     'N/runtime',
     'N/format',
+    'N/record',
     './windcave_constants',
     './windcave_api_module',
     './windcave_reconciliation_lib'
-], function(log, email, runtime, format, constants, windcaveApi, reconciliation) {
+], function(log, email, runtime, format, record, constants, windcaveApi, reconciliation) {
 
     const SCRIPT_NAME = 'WindcaveSettlementScheduled';
+
+    /**
+     * Checks if a configuration should run based on schedule settings
+     * @param {Object} config - Configuration object
+     * @returns {boolean} True if should run now
+     */
+    function shouldRunNow(config) {
+        // If scheduling not enabled, don't run
+        if (!config.enableScheduled) {
+            log.debug({
+                title: SCRIPT_NAME + '.shouldRunNow',
+                details: '[' + config.name + '] Scheduled fetch not enabled'
+            });
+            return false;
+        }
+
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentDay = now.getDay() + 1; // JS: 0=Sun, NS: 1=Sun
+
+        // Check hour (allow within same hour)
+        const scheduleHour = config.scheduleHour || 6;
+        if (currentHour !== scheduleHour) {
+            log.debug({
+                title: SCRIPT_NAME + '.shouldRunNow',
+                details: '[' + config.name + '] Not scheduled hour. Current: ' + currentHour + ', Scheduled: ' + scheduleHour
+            });
+            return false;
+        }
+
+        // Check frequency
+        const frequency = config.scheduleFreq || constants.SCHEDULE_FREQUENCY.DAILY;
+
+        if (frequency === constants.SCHEDULE_FREQUENCY.WEEKLY) {
+            const scheduleDay = parseInt(config.scheduleDay) || 2; // Default Monday
+            if (currentDay !== scheduleDay) {
+                log.debug({
+                    title: SCRIPT_NAME + '.shouldRunNow',
+                    details: '[' + config.name + '] Not scheduled day. Current: ' + currentDay + ', Scheduled: ' + scheduleDay
+                });
+                return false;
+            }
+        }
+
+        // Check if already run today/this hour (prevent duplicate runs)
+        if (config.lastRunDate) {
+            const lastRun = new Date(config.lastRunDate);
+            const hoursSinceLastRun = (now - lastRun) / (1000 * 60 * 60);
+            if (hoursSinceLastRun < 1) {
+                log.debug({
+                    title: SCRIPT_NAME + '.shouldRunNow',
+                    details: '[' + config.name + '] Already ran within the last hour'
+                });
+                return false;
+            }
+        }
+
+        log.audit({
+            title: SCRIPT_NAME + '.shouldRunNow',
+            details: '[' + config.name + '] Schedule check passed, will process'
+        });
+        return true;
+    }
+
+    /**
+     * Updates the last run date and status on a configuration record
+     * @param {number} configId - Configuration internal ID
+     * @param {string} status - Status message
+     */
+    function updateConfigRunStatus(configId, status) {
+        try {
+            record.submitFields({
+                type: constants.RECORD_TYPES.CONFIG,
+                id: configId,
+                values: {
+                    [constants.CONFIG_FIELDS.LAST_RUN_DATE]: new Date(),
+                    [constants.CONFIG_FIELDS.LAST_RUN_STATUS]: status
+                }
+            });
+        } catch (e) {
+            log.error({
+                title: SCRIPT_NAME + '.updateConfigRunStatus',
+                details: 'Failed to update config ' + configId + ': ' + e.message
+            });
+        }
+    }
 
     /**
      * Main entry point for scheduled script execution
@@ -56,6 +143,15 @@ define([
 
             // Process each configuration
             for (const config of configurations) {
+                // Check if this config should run based on schedule
+                if (!shouldRunNow(config)) {
+                    log.debug({
+                        title: SCRIPT_NAME,
+                        details: 'Skipping configuration ' + config.name + ' - not scheduled to run now'
+                    });
+                    continue;
+                }
+
                 // Check governance before processing each config
                 const remainingUsage = runtime.getCurrentScript().getRemainingUsage();
                 if (remainingUsage < 1000) {
@@ -76,7 +172,8 @@ define([
                     settlementsProcessed: 0,
                     matched: 0,
                     unmatched: 0,
-                    errors: []
+                    errors: [],
+                    sendEmail: config.sendEmail
                 };
 
                 try {
@@ -86,8 +183,8 @@ define([
                                  ' (Merchant ID: ' + config.merchantId + ')'
                     });
 
-                    // Collect notification email
-                    if (config.notificationEmail) {
+                    // Collect notification email only if send email is enabled
+                    if (config.sendEmail && config.notificationEmail) {
                         notificationEmails.add(config.notificationEmail);
                     }
 
@@ -154,6 +251,11 @@ define([
 
                     processingResults.configurationsProcessed++;
 
+                    // Update config with successful run status
+                    const statusMsg = 'Success: ' + configResult.settlementsProcessed + ' settlements processed, ' +
+                                      configResult.matched + ' matched, ' + configResult.unmatched + ' unmatched';
+                    updateConfigRunStatus(config.internalId, statusMsg);
+
                 } catch (configError) {
                     log.error({
                         title: SCRIPT_NAME,
@@ -163,6 +265,9 @@ define([
                         'Configuration ' + config.name + ': ' + configError.message
                     );
                     configResult.errors.push(configError.message);
+
+                    // Update config with error status
+                    updateConfigRunStatus(config.internalId, 'Error: ' + configError.message);
                 }
 
                 processingResults.configResults.push(configResult);

@@ -29,7 +29,14 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                     constants.CONFIG_FIELDS.ENVIRONMENT,
                     constants.CONFIG_FIELDS.BANK_ACCOUNT,
                     constants.CONFIG_FIELDS.LOOKBACK_DAYS,
-                    constants.CONFIG_FIELDS.NOTIFICATION_EMAIL
+                    constants.CONFIG_FIELDS.NOTIFICATION_EMAIL,
+                    constants.CONFIG_FIELDS.ENABLE_SCHEDULED,
+                    constants.CONFIG_FIELDS.SCHEDULE_FREQ,
+                    constants.CONFIG_FIELDS.SCHEDULE_DAY,
+                    constants.CONFIG_FIELDS.SCHEDULE_HOUR,
+                    constants.CONFIG_FIELDS.SEND_EMAIL,
+                    constants.CONFIG_FIELDS.LAST_RUN_DATE,
+                    constants.CONFIG_FIELDS.LAST_RUN_STATUS
                 ]
             });
 
@@ -47,7 +54,14 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                     bankAccount: result.getValue(constants.CONFIG_FIELDS.BANK_ACCOUNT),
                     bankAccountText: result.getText(constants.CONFIG_FIELDS.BANK_ACCOUNT),
                     lookbackDays: parseInt(result.getValue(constants.CONFIG_FIELDS.LOOKBACK_DAYS)) || constants.MISC.DEFAULT_LOOKBACK_DAYS,
-                    notificationEmail: result.getValue(constants.CONFIG_FIELDS.NOTIFICATION_EMAIL)
+                    notificationEmail: result.getValue(constants.CONFIG_FIELDS.NOTIFICATION_EMAIL),
+                    enableScheduled: result.getValue(constants.CONFIG_FIELDS.ENABLE_SCHEDULED) === true || result.getValue(constants.CONFIG_FIELDS.ENABLE_SCHEDULED) === 'T',
+                    scheduleFreq: result.getValue(constants.CONFIG_FIELDS.SCHEDULE_FREQ),
+                    scheduleDay: result.getValue(constants.CONFIG_FIELDS.SCHEDULE_DAY),
+                    scheduleHour: parseInt(result.getValue(constants.CONFIG_FIELDS.SCHEDULE_HOUR)) || 6,
+                    sendEmail: result.getValue(constants.CONFIG_FIELDS.SEND_EMAIL) === true || result.getValue(constants.CONFIG_FIELDS.SEND_EMAIL) === 'T',
+                    lastRunDate: result.getValue(constants.CONFIG_FIELDS.LAST_RUN_DATE),
+                    lastRunStatus: result.getValue(constants.CONFIG_FIELDS.LAST_RUN_STATUS)
                 });
                 return true; // Continue iterating
             });

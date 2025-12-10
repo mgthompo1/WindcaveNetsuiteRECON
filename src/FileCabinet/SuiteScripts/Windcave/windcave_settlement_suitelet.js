@@ -304,6 +304,8 @@ define([
             configHtml += '<th style="padding: 8px; text-align: left; border: 1px solid #dee2e6;">Environment</th>';
             configHtml += '<th style="padding: 8px; text-align: left; border: 1px solid #dee2e6;">Bank Account</th>';
             configHtml += '<th style="padding: 8px; text-align: left; border: 1px solid #dee2e6;">Lookback</th>';
+            configHtml += '<th style="padding: 8px; text-align: left; border: 1px solid #dee2e6;">Schedule</th>';
+            configHtml += '<th style="padding: 8px; text-align: left; border: 1px solid #dee2e6;">Last Run</th>';
             configHtml += '</tr></thead><tbody>';
 
             for (const config of configurations) {
@@ -313,6 +315,52 @@ define([
                 configHtml += '<td style="padding: 8px; border: 1px solid #dee2e6;">' + (config.environment === 'sec' ? 'Production' : 'UAT') + '</td>';
                 configHtml += '<td style="padding: 8px; border: 1px solid #dee2e6;">' + (config.bankAccountText || config.bankAccount) + '</td>';
                 configHtml += '<td style="padding: 8px; border: 1px solid #dee2e6;">' + config.lookbackDays + ' days</td>';
+
+                // Schedule column
+                let scheduleText = '';
+                if (config.enableScheduled) {
+                    const dayNames = ['', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    const hour = config.scheduleHour || 6;
+                    const hourFormatted = hour === 0 ? '12am' : hour < 12 ? hour + 'am' : hour === 12 ? '12pm' : (hour - 12) + 'pm';
+
+                    if (config.scheduleFreq === 'WEEKLY') {
+                        const dayNum = parseInt(config.scheduleDay) || 2;
+                        scheduleText = '<span style="color: #28a745;">Weekly (' + dayNames[dayNum] + ' @ ' + hourFormatted + ')</span>';
+                    } else {
+                        scheduleText = '<span style="color: #28a745;">Daily @ ' + hourFormatted + '</span>';
+                    }
+
+                    if (config.sendEmail) {
+                        scheduleText += ' <span style="color: #6c757d; font-size: 10px;">[Email]</span>';
+                    }
+                } else {
+                    scheduleText = '<span style="color: #6c757d;">Disabled</span>';
+                }
+                configHtml += '<td style="padding: 8px; border: 1px solid #dee2e6;">' + scheduleText + '</td>';
+
+                // Last Run column
+                let lastRunHtml = '';
+                if (config.lastRunDate) {
+                    const lastRunFormatted = format.format({
+                        value: new Date(config.lastRunDate),
+                        type: format.Type.DATETIMETZ
+                    });
+                    lastRunHtml += '<div style="font-size: 11px;">' + lastRunFormatted + '</div>';
+
+                    if (config.lastRunStatus) {
+                        const isError = config.lastRunStatus.toLowerCase().indexOf('error') >= 0;
+                        const statusColor = isError ? '#dc3545' : '#28a745';
+                        // Truncate long status messages
+                        const statusDisplay = config.lastRunStatus.length > 50 ?
+                            config.lastRunStatus.substring(0, 50) + '...' : config.lastRunStatus;
+                        lastRunHtml += '<div style="font-size: 10px; color: ' + statusColor + ';" title="' +
+                            config.lastRunStatus.replace(/"/g, '&quot;') + '">' + statusDisplay + '</div>';
+                    }
+                } else {
+                    lastRunHtml = '<span style="color: #6c757d;">Never</span>';
+                }
+                configHtml += '<td style="padding: 8px; border: 1px solid #dee2e6;">' + lastRunHtml + '</td>';
+
                 configHtml += '</tr>';
             }
 

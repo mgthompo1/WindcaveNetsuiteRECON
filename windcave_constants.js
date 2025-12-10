@@ -28,7 +28,22 @@ define([], function() {
         BANK_ACCOUNT: 'custrecord_wc_bank_account',
         LOOKBACK_DAYS: 'custrecord_wc_lookback_days',
         NOTIFICATION_EMAIL: 'custrecord_wc_notification_email',
-        IS_ACTIVE: 'custrecord_wc_is_active'
+        IS_ACTIVE: 'custrecord_wc_is_active',
+        ENABLE_SCHEDULED: 'custrecord_wc_enable_scheduled',
+        SCHEDULE_FREQ: 'custrecord_wc_schedule_freq',
+        SCHEDULE_DAY: 'custrecord_wc_schedule_day',
+        SCHEDULE_HOUR: 'custrecord_wc_schedule_hour',
+        SEND_EMAIL: 'custrecord_wc_send_email',
+        LAST_RUN_DATE: 'custrecord_wc_last_run_date',
+        LAST_RUN_STATUS: 'custrecord_wc_last_run_status'
+    };
+
+    /**
+     * Schedule Frequency Values
+     */
+    const SCHEDULE_FREQUENCY = {
+        DAILY: 'DAILY',
+        WEEKLY: 'WEEKLY'
     };
 
     /**
@@ -164,6 +179,7 @@ define([], function() {
     return {
         RECORD_TYPES,
         CONFIG_FIELDS,
+        SCHEDULE_FREQUENCY,
         SETTLEMENT_FIELDS,
         TXN_DETAIL_FIELDS,
         API,

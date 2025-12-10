@@ -86,5 +86,95 @@
             <displaytype>NORMAL</displaytype>
             <defaultvalue>T</defaultvalue>
         </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_enable_scheduled">
+            <label>Enable Scheduled Fetch</label>
+            <description>Enable automatic scheduled fetching of settlements</description>
+            <fieldtype>CHECKBOX</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <defaultvalue>F</defaultvalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_schedule_freq">
+            <label>Schedule Frequency</label>
+            <description>How often to run the scheduled fetch</description>
+            <fieldtype>SELECT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <selectoption>
+                <value>DAILY</value>
+                <text>Daily</text>
+                <isdefault>T</isdefault>
+            </selectoption>
+            <selectoption>
+                <value>WEEKLY</value>
+                <text>Weekly</text>
+            </selectoption>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_schedule_day">
+            <label>Day of Week</label>
+            <description>Day to run weekly schedule (only used if frequency is Weekly)</description>
+            <fieldtype>SELECT</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <selectoption>
+                <value>1</value>
+                <text>Sunday</text>
+            </selectoption>
+            <selectoption>
+                <value>2</value>
+                <text>Monday</text>
+                <isdefault>T</isdefault>
+            </selectoption>
+            <selectoption>
+                <value>3</value>
+                <text>Tuesday</text>
+            </selectoption>
+            <selectoption>
+                <value>4</value>
+                <text>Wednesday</text>
+            </selectoption>
+            <selectoption>
+                <value>5</value>
+                <text>Thursday</text>
+            </selectoption>
+            <selectoption>
+                <value>6</value>
+                <text>Friday</text>
+            </selectoption>
+            <selectoption>
+                <value>7</value>
+                <text>Saturday</text>
+            </selectoption>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_schedule_hour">
+            <label>Run Time (Hour)</label>
+            <description>Hour of day to run (0-23, in account timezone)</description>
+            <fieldtype>INTEGER</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <defaultvalue>6</defaultvalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_send_email">
+            <label>Send Email Summary</label>
+            <description>Send email notification after scheduled run</description>
+            <fieldtype>CHECKBOX</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>NORMAL</displaytype>
+            <defaultvalue>F</defaultvalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_last_run_date">
+            <label>Last Scheduled Run</label>
+            <description>Date/time of last scheduled run</description>
+            <fieldtype>DATETIMETZ</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>DISABLED</displaytype>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_wc_last_run_status">
+            <label>Last Run Status</label>
+            <description>Status message from last scheduled run</description>
+            <fieldtype>TEXTAREA</fieldtype>
+            <ismandatory>F</ismandatory>
+            <displaytype>DISABLED</displaytype>
+        </customrecordcustomfield>
     </customrecordcustomfields>
 </customrecordtype>

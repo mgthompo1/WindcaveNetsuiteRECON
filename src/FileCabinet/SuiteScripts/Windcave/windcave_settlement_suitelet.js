@@ -915,10 +915,8 @@ define([
 
                 // NS Transaction link or manual match dropdown
                 if (txn.nsTransactionId) {
-                    const nsUrl = url.resolveRecord({
-                        recordType: 'transaction',
-                        recordId: txn.nsTransactionId
-                    });
+                    // Use direct URL format since resolveRecord doesn't work with generic 'transaction' type
+                    const nsUrl = '/app/accounting/transactions/transaction.nl?id=' + txn.nsTransactionId;
                     txnHtml += '<td><a href="' + nsUrl + '" target="_blank">' + (txn.nsTransactionText || txn.nsTransactionId) + '</a></td>';
                 } else {
                     txnHtml += '<td>-</td>';

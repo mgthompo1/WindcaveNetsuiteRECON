@@ -298,8 +298,7 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                         'tranid',
                         'amount',
                         'currency',
-                        'status',
-                        'undepfunds'
+                        'status'
                     ]
                 });
 
@@ -320,8 +319,7 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                     tranId: result.getValue('tranid'),
                     amount: parseFloat(result.getValue('amount')),
                     currency: result.getText('currency'),
-                    status: result.getValue('status'),
-                    undepositedFunds: result.getValue('undepfunds')
+                    status: result.getValue('status')
                 };
 
             } catch (e) {

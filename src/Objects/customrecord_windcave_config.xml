@@ -96,55 +96,19 @@
         </customrecordcustomfield>
         <customrecordcustomfield scriptid="custrecord_wc_schedule_freq">
             <label>Schedule Frequency</label>
-            <description>How often to run the scheduled fetch</description>
-            <fieldtype>SELECT</fieldtype>
+            <description>How often to run the scheduled fetch (DAILY or WEEKLY)</description>
+            <fieldtype>TEXT</fieldtype>
             <ismandatory>F</ismandatory>
             <displaytype>NORMAL</displaytype>
-            <selectoption>
-                <value>DAILY</value>
-                <text>Daily</text>
-                <isdefault>T</isdefault>
-            </selectoption>
-            <selectoption>
-                <value>WEEKLY</value>
-                <text>Weekly</text>
-            </selectoption>
+            <defaultvalue>DAILY</defaultvalue>
         </customrecordcustomfield>
         <customrecordcustomfield scriptid="custrecord_wc_schedule_day">
             <label>Day of Week</label>
-            <description>Day to run weekly schedule (only used if frequency is Weekly)</description>
-            <fieldtype>SELECT</fieldtype>
+            <description>Day to run weekly schedule (1=Sun, 2=Mon, 3=Tue, 4=Wed, 5=Thu, 6=Fri, 7=Sat)</description>
+            <fieldtype>INTEGER</fieldtype>
             <ismandatory>F</ismandatory>
             <displaytype>NORMAL</displaytype>
-            <selectoption>
-                <value>1</value>
-                <text>Sunday</text>
-            </selectoption>
-            <selectoption>
-                <value>2</value>
-                <text>Monday</text>
-                <isdefault>T</isdefault>
-            </selectoption>
-            <selectoption>
-                <value>3</value>
-                <text>Tuesday</text>
-            </selectoption>
-            <selectoption>
-                <value>4</value>
-                <text>Wednesday</text>
-            </selectoption>
-            <selectoption>
-                <value>5</value>
-                <text>Thursday</text>
-            </selectoption>
-            <selectoption>
-                <value>6</value>
-                <text>Friday</text>
-            </selectoption>
-            <selectoption>
-                <value>7</value>
-                <text>Saturday</text>
-            </selectoption>
+            <defaultvalue>2</defaultvalue>
         </customrecordcustomfield>
         <customrecordcustomfield scriptid="custrecord_wc_schedule_hour">
             <label>Run Time (Hour)</label>
@@ -167,14 +131,14 @@
             <description>Date/time of last scheduled run</description>
             <fieldtype>DATETIMETZ</fieldtype>
             <ismandatory>F</ismandatory>
-            <displaytype>DISABLED</displaytype>
+            <displaytype>NORMAL</displaytype>
         </customrecordcustomfield>
         <customrecordcustomfield scriptid="custrecord_wc_last_run_status">
             <label>Last Run Status</label>
             <description>Status message from last scheduled run</description>
             <fieldtype>TEXTAREA</fieldtype>
             <ismandatory>F</ismandatory>
-            <displaytype>DISABLED</displaytype>
+            <displaytype>NORMAL</displaytype>
         </customrecordcustomfield>
     </customrecordcustomfields>
 </customrecordtype>

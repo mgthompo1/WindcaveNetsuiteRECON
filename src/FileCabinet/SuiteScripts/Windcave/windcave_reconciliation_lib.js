@@ -360,14 +360,10 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                             ['type', 'anyof', 'CashSale']
                         ],
                         'AND',
-                        ['undepfunds', 'is', 'T'], // Only undeposited
-                        'AND',
                         [
                             ['authcode', 'is', authCode],
                             'OR',
-                            ['pnrefnum', 'is', transactionId],
-                            'OR',
-                            ['custbody_windcave_txn_id', 'is', transactionId] // Custom field if exists
+                            ['pnrefnum', 'is', transactionId]
                         ]
                     ],
                     columns: [
@@ -376,10 +372,7 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                         'tranid',
                         'amount',
                         'currency',
-                        'status',
-                        'undepfunds',
-                        'authcode',
-                        'pnrefnum'
+                        'status'
                     ]
                 });
 
@@ -409,7 +402,6 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                             amount: txnAmount,
                             currency: result.getText('currency'),
                             status: result.getValue('status'),
-                            undepositedFunds: result.getValue('undepfunds'),
                             matchMethod: 'authcode'
                         };
                     }
@@ -425,7 +417,6 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                         amount: parseFloat(result.getValue('amount')),
                         currency: result.getText('currency'),
                         status: result.getValue('status'),
-                        undepositedFunds: result.getValue('undepfunds'),
                         matchMethod: 'authcode'
                     };
                 }

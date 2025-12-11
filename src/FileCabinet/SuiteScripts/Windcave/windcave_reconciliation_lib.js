@@ -280,31 +280,24 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
          * @param {string} internalId - NetSuite internal ID from merchantReference
          * @returns {Object|null} Transaction info or null if not found
          */
-        function findNetSuiteTransaction(internalId) {
-            if (!internalId || internalId.trim() === '') {
+        function findNetSuiteTransaction(merchantReference) {
+            if (!merchantReference || merchantReference.trim() === '') {
                 return null;
             }
 
-            // Clean the internal ID (remove any non-numeric characters)
-            const cleanId = internalId.replace(/\D/g, '');
-            if (!cleanId) {
+            // Clean the merchant reference (remove any non-numeric characters)
+            const cleanRef = merchantReference.replace(/\D/g, '');
+            if (!cleanRef) {
                 return null;
             }
 
             try {
-                // Search for the transaction across supported types
+                // Search for the transaction by transaction number (tranid)
+                // The merchantReference from Windcave is the NetSuite document number, not internal ID
                 const txnSearch = search.create({
-                    type: search.Type.TRANSACTION,
+                    type: search.Type.CUSTOMER_PAYMENT,
                     filters: [
-                        ['internalid', 'is', cleanId],
-                        'AND',
-                        ['mainline', 'is', 'T'],
-                        'AND',
-                        [
-                            ['type', 'anyof', 'CustPymt'],
-                            'OR',
-                            ['type', 'anyof', 'CashSale']
-                        ]
+                        ['tranid', 'is', cleanRef]
                     ],
                     columns: [
                         'internalid',
@@ -312,34 +305,84 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                         'tranid',
                         'amount',
                         'currency',
-                        'status'
+                        'status',
+                        'account'
                     ]
                 });
 
-                const results = txnSearch.run().getRange({ start: 0, end: 1 });
+                log.debug({
+                    title: MODULE_NAME + '.findNetSuiteTransaction',
+                    details: 'Searching for payment with tranid: ' + cleanRef
+                });
+
+                const results = txnSearch.run().getRange({ start: 0, end: 5 });
+
+                log.debug({
+                    title: MODULE_NAME + '.findNetSuiteTransaction',
+                    details: 'Search returned ' + (results ? results.length : 0) + ' results'
+                });
 
                 if (!results || results.length === 0) {
-                    log.debug({
-                        title: MODULE_NAME + '.findNetSuiteTransaction',
-                        details: 'No transaction found for ID: ' + cleanId
+                    // Try Cash Sale as fallback
+                    const cashSaleSearch = search.create({
+                        type: search.Type.CASH_SALE,
+                        filters: [
+                            ['tranid', 'is', cleanRef]
+                        ],
+                        columns: [
+                            'internalid',
+                            'type',
+                            'tranid',
+                            'amount',
+                            'currency',
+                            'status',
+                            'account'
+                        ]
                     });
-                    return null;
+
+                    const cashResults = cashSaleSearch.run().getRange({ start: 0, end: 5 });
+
+                    if (!cashResults || cashResults.length === 0) {
+                        log.debug({
+                            title: MODULE_NAME + '.findNetSuiteTransaction',
+                            details: 'No payment or cash sale found for tranid: ' + cleanRef
+                        });
+                        return null;
+                    }
+
+                    const cashResult = cashResults[0];
+                    // Check if account is Undeposited Funds (account name contains "undeposited")
+                    const accountName = cashResult.getText('account') || '';
+                    const isUndeposited = accountName.toLowerCase().indexOf('undeposited') >= 0;
+                    return {
+                        internalId: cashResult.getValue('internalid'),
+                        type: cashResult.getValue('type'),
+                        tranId: cashResult.getValue('tranid'),
+                        amount: parseFloat(cashResult.getValue('amount')),
+                        currency: cashResult.getText('currency'),
+                        status: cashResult.getValue('status'),
+                        undepositedFunds: isUndeposited ? 'T' : 'F'
+                    };
                 }
 
                 const result = results[0];
+                // Check if account is Undeposited Funds (account name contains "undeposited")
+                const accountName = result.getText('account') || '';
+                const isUndeposited = accountName.toLowerCase().indexOf('undeposited') >= 0;
                 return {
                     internalId: result.getValue('internalid'),
                     type: result.getValue('type'),
                     tranId: result.getValue('tranid'),
                     amount: parseFloat(result.getValue('amount')),
                     currency: result.getText('currency'),
-                    status: result.getValue('status')
+                    status: result.getValue('status'),
+                    undepositedFunds: isUndeposited ? 'T' : 'F'
                 };
 
             } catch (e) {
                 log.error({
                     title: MODULE_NAME + '.findNetSuiteTransaction',
-                    details: 'Error searching for transaction ' + cleanId + ': ' + e.message
+                    details: 'Error searching for transaction ' + cleanRef + ': ' + e.message
                 });
                 return null;
             }
@@ -354,37 +397,35 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
          * @returns {Object|null} Transaction info or null if not found
          */
         function findNetSuiteTransactionByAuthCode(authCode, amount, transactionId) {
-            if (!authCode || authCode.trim() === '') {
+            if ((!authCode || authCode.trim() === '') && (!transactionId || transactionId.trim() === '')) {
                 return null;
             }
 
             try {
-                // Search for transactions with matching auth code
-                // NetSuite stores auth code in 'authcode' field on payments
+                // Build filter for auth code and/or pnref
+                const authFilters = [];
+                if (authCode && authCode.trim() !== '') {
+                    authFilters.push(['authcode', 'is', authCode]);
+                }
+                if (transactionId && transactionId.trim() !== '') {
+                    if (authFilters.length > 0) {
+                        authFilters.push('OR');
+                    }
+                    authFilters.push(['pnrefnum', 'is', transactionId]);
+                }
+
+                // Search for Customer Payments with matching auth code or pnref
                 const txnSearch = search.create({
-                    type: search.Type.TRANSACTION,
-                    filters: [
-                        ['mainline', 'is', 'T'],
-                        'AND',
-                        [
-                            ['type', 'anyof', 'CustPymt'],
-                            'OR',
-                            ['type', 'anyof', 'CashSale']
-                        ],
-                        'AND',
-                        [
-                            ['authcode', 'is', authCode],
-                            'OR',
-                            ['pnrefnum', 'is', transactionId]
-                        ]
-                    ],
+                    type: search.Type.CUSTOMER_PAYMENT,
+                    filters: authFilters,
                     columns: [
                         'internalid',
                         'type',
                         'tranid',
                         'amount',
                         'currency',
-                        'status'
+                        'status',
+                        'account'
                     ]
                 });
 
@@ -393,7 +434,7 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                 if (!results || results.length === 0) {
                     log.debug({
                         title: MODULE_NAME + '.findNetSuiteTransactionByAuthCode',
-                        details: 'No transaction found for auth code: ' + authCode
+                        details: 'No transaction found for auth code: ' + authCode + ', pnref: ' + transactionId
                     });
                     return null;
                 }
@@ -405,8 +446,10 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                     if (Math.abs(txnAmount - amount) <= tolerance) {
                         log.audit({
                             title: MODULE_NAME + '.findNetSuiteTransactionByAuthCode',
-                            details: 'Found match by auth code: ' + authCode + ', amount: ' + amount
+                            details: 'Found match by auth code/pnref: ' + authCode + '/' + transactionId + ', amount: ' + amount
                         });
+                        const acctName = result.getText('account') || '';
+                        const isUndep = acctName.toLowerCase().indexOf('undeposited') >= 0;
                         return {
                             internalId: result.getValue('internalid'),
                             type: result.getValue('type'),
@@ -414,6 +457,7 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                             amount: txnAmount,
                             currency: result.getText('currency'),
                             status: result.getValue('status'),
+                            undepositedFunds: isUndep ? 'T' : 'F',
                             matchMethod: 'authcode'
                         };
                     }
@@ -422,6 +466,8 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                 // If no exact amount match, return first result if only one
                 if (results.length === 1) {
                     const result = results[0];
+                    const acctName = result.getText('account') || '';
+                    const isUndep = acctName.toLowerCase().indexOf('undeposited') >= 0;
                     return {
                         internalId: result.getValue('internalid'),
                         type: result.getValue('type'),
@@ -429,13 +475,14 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                         amount: parseFloat(result.getValue('amount')),
                         currency: result.getText('currency'),
                         status: result.getValue('status'),
+                        undepositedFunds: isUndep ? 'T' : 'F',
                         matchMethod: 'authcode'
                     };
                 }
 
                 log.debug({
                     title: MODULE_NAME + '.findNetSuiteTransactionByAuthCode',
-                    details: 'Multiple results found but none match amount. Auth: ' + authCode + ', Amount: ' + amount
+                    details: 'Multiple results found but none match amount. Auth: ' + authCode + ', pnref: ' + transactionId + ', Amount: ' + amount
                 });
                 return null;
 
@@ -457,9 +504,14 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
          */
         function validatePaymentForDeposit(nsTransaction, windcaveTxn) {
             if (!nsTransaction) {
+                // Build helpful error showing what we searched for
+                const searchedRef = windcaveTxn.merchantReference || 'none';
+                const searchedAuth = windcaveTxn.authCode || 'none';
+                const searchedPnref = windcaveTxn.id || 'none';
                 return {
                     isValid: false,
-                    error: constants.ERRORS.NO_MATCHING_PAYMENT
+                    error: constants.ERRORS.NO_MATCHING_PAYMENT +
+                           ' (searched: docNum=' + searchedRef + ', authCode=' + searchedAuth + ', pnref=' + searchedPnref + ')'
                 };
             }
 
@@ -467,7 +519,8 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
             if (nsTransaction.undepositedFunds === 'F') {
                 return {
                     isValid: false,
-                    error: constants.ERRORS.PAYMENT_ALREADY_DEPOSITED
+                    error: constants.ERRORS.PAYMENT_ALREADY_DEPOSITED +
+                           ' (Payment #' + nsTransaction.tranId + ')'
                 };
             }
 
@@ -635,6 +688,21 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                 let paymentsAdded = 0;
                 const lineCount = depositRecord.getLineCount({ sublistId: 'payment' });
 
+                log.debug({
+                    title: MODULE_NAME + '.createBankDeposit',
+                    details: 'Deposit has ' + lineCount + ' undeposited payments available'
+                });
+
+                // Build list of matched internal IDs for comparison (as strings)
+                const matchedIds = matchedTransactions
+                    .filter(m => m.nsTransaction && m.nsTransaction.internalId)
+                    .map(m => String(m.nsTransaction.internalId));
+
+                log.debug({
+                    title: MODULE_NAME + '.createBankDeposit',
+                    details: 'Looking for payment IDs: ' + matchedIds.join(', ')
+                });
+
                 for (let i = 0; i < lineCount; i++) {
                     const paymentId = depositRecord.getSublistValue({
                         sublistId: 'payment',
@@ -642,9 +710,9 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                         line: i
                     });
 
-                    // Check if this payment is in our matched list
+                    // Check if this payment is in our matched list (compare as strings)
                     const matchedTxn = matchedTransactions.find(m =>
-                        m.nsTransaction && m.nsTransaction.internalId == paymentId
+                        m.nsTransaction && String(m.nsTransaction.internalId) === String(paymentId)
                     );
 
                     if (matchedTxn) {
@@ -1208,11 +1276,41 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                     return { success: false, error: 'No matched transactions pending deposit' };
                 }
 
+                // Get subsidiary from first matched payment by loading the record
+                let subsidiaryId = null;
+                if (pendingTransactions.length > 0 && pendingTransactions[0].nsTransactionId) {
+                    try {
+                        const paymentRecord = record.load({
+                            type: record.Type.CUSTOMER_PAYMENT,
+                            id: pendingTransactions[0].nsTransactionId
+                        });
+                        subsidiaryId = paymentRecord.getValue({ fieldId: 'subsidiary' });
+                        const subsidiaryText = paymentRecord.getText({ fieldId: 'subsidiary' });
+                        log.audit({
+                            title: MODULE_NAME + '.createSupplementaryDeposit',
+                            details: 'Using subsidiary from payment ' + pendingTransactions[0].nsTransactionId + ': ' + subsidiaryId + ' (' + subsidiaryText + ')'
+                        });
+                    } catch (e) {
+                        log.audit({
+                            title: MODULE_NAME + '.createSupplementaryDeposit',
+                            details: 'Could not load payment to get subsidiary: ' + e.message
+                        });
+                    }
+                }
+
                 // Create the deposit
                 const depositRecord = record.create({
                     type: record.Type.DEPOSIT,
                     isDynamic: true
                 });
+
+                // Set subsidiary first so payment sublist filters correctly
+                if (subsidiaryId) {
+                    depositRecord.setValue({
+                        fieldId: 'subsidiary',
+                        value: subsidiaryId
+                    });
+                }
 
                 depositRecord.setValue({
                     fieldId: 'account',
@@ -1236,6 +1334,32 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                 const addedTxnDetailIds = [];
                 const lineCount = depositRecord.getLineCount({ sublistId: 'payment' });
 
+                log.audit({
+                    title: MODULE_NAME + '.createSupplementaryDeposit',
+                    details: 'Deposit has ' + lineCount + ' undeposited payments. Looking for ' + pendingTransactions.length + ' matched transactions'
+                });
+
+                // Log what we're looking for
+                const pendingIds = pendingTransactions.map(t => t.nsTransactionId);
+                log.audit({
+                    title: MODULE_NAME + '.createSupplementaryDeposit',
+                    details: 'Pending NS transaction IDs: ' + JSON.stringify(pendingIds)
+                });
+
+                // Log first few payment IDs from the deposit to debug
+                const depositPaymentIds = [];
+                for (let j = 0; j < Math.min(lineCount, 15); j++) {
+                    depositPaymentIds.push(depositRecord.getSublistValue({
+                        sublistId: 'payment',
+                        fieldId: 'id',
+                        line: j
+                    }));
+                }
+                log.audit({
+                    title: MODULE_NAME + '.createSupplementaryDeposit',
+                    details: 'Payment IDs in deposit: ' + JSON.stringify(depositPaymentIds)
+                });
+
                 for (let i = 0; i < lineCount; i++) {
                     const paymentId = depositRecord.getSublistValue({
                         sublistId: 'payment',
@@ -1243,8 +1367,8 @@ define(['N/record', 'N/search', 'N/log', 'N/format', './windcave_constants'],
                         line: i
                     });
 
-                    // Check if this payment is in our pending list
-                    const pendingTxn = pendingTransactions.find(t => t.nsTransactionId == paymentId);
+                    // Check if this payment is in our pending list (compare as strings)
+                    const pendingTxn = pendingTransactions.find(t => String(t.nsTransactionId) === String(paymentId));
 
                     if (pendingTxn) {
                         depositRecord.selectLine({

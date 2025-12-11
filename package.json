@@ -4,12 +4,12 @@
   "description": "NetSuite integration for Windcave payment processor settlement reconciliation",
   "main": "src/FileCabinet/SuiteScripts/Windcave/windcave_settlement_scheduled.js",
   "scripts": {
-    "setup": "suitecloud account:setup",
-    "validate": "suitecloud project:validate",
-    "deploy": "suitecloud project:deploy",
-    "deploy:preview": "suitecloud project:deploy --dryrun",
-    "import": "suitecloud object:import",
-    "list-objects": "suitecloud object:list"
+    "setup": "cd src && suitecloud account:setup",
+    "validate": "cd src && suitecloud project:validate",
+    "deploy": "cd src && suitecloud project:deploy",
+    "deploy:preview": "cd src && suitecloud project:deploy --dryrun",
+    "import": "cd src && suitecloud object:import",
+    "list-objects": "cd src && suitecloud object:list"
   },
   "keywords": [
     "netsuite",
